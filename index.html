@@ -331,7 +331,7 @@
         }
         
         .hidden {
-            display: none;
+            display: none !important;
         }
         
         .file-input {
@@ -362,6 +362,14 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
         }
         
         .modal-content {
@@ -371,6 +379,12 @@
             max-width: 500px;
             width: 90%;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateY(-20px);
+            transition: transform 0.3s;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
         }
         
         .modal-buttons {
@@ -400,6 +414,21 @@
         
         .required::after {
             content: " *";
+            color: var(--danger-color);
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .close-modal:hover {
             color: var(--danger-color);
         }
     </style>
@@ -637,8 +666,9 @@
         </div>
     </div>
     
-    <div id="taskModal" class="modal hidden">
+    <div id="taskModal" class="modal">
         <div class="modal-content">
+            <button class="close-modal" id="closeModalBtn">&times;</button>
             <h3 id="modalTitle">Add New Task</h3>
             <div class="form-group">
                 <label for="taskName" class="required">Task / Activity</label>
@@ -719,12 +749,13 @@
         const taskModal = document.getElementById('taskModal');
         const modalTitle = document.getElementById('modalTitle');
         const taskName = document.getElementById('taskName');
-        const hazard = document.getElementById('hazard');
+        const hazardInput = document.getElementById('hazard');
         const taskLikelihood = document.getElementById('taskLikelihood');
         const taskSeverity = document.getElementById('taskSeverity');
         const controls = document.getElementById('controls');
         const saveTaskBtn = document.getElementById('saveTaskBtn');
         const cancelTaskBtn = document.getElementById('cancelTaskBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
         
         // Initialize with current date
         const today = new Date();
@@ -768,6 +799,28 @@
             statusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
         }
         
+        // Modal functions
+        function openModal() {
+            taskModal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+        
+        function closeModal() {
+            taskModal.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Re-enable scrolling
+            resetModalForm();
+        }
+        
+        function resetModalForm() {
+            editingTaskIndex = -1;
+            modalTitle.textContent = "Add New Task";
+            taskName.value = '';
+            hazardInput.value = '';
+            taskLikelihood.value = '3';
+            taskSeverity.value = '3';
+            controls.value = '';
+        }
+        
         // Tasks table functions
         function renderTasksTable() {
             if (tasks.length === 0) {
@@ -803,14 +856,8 @@
         }
         
         function addNewTask() {
-            editingTaskIndex = -1;
-            modalTitle.textContent = "Add New Task";
-            taskName.value = '';
-            hazard.value = '';
-            taskLikelihood.value = '3';
-            taskSeverity.value = '3';
-            controls.value = '';
-            taskModal.classList.remove('hidden');
+            resetModalForm();
+            openModal();
         }
         
         function editTask(index) {
@@ -819,11 +866,12 @@
             
             modalTitle.textContent = "Edit Task";
             taskName.value = task.name;
-            hazard.value = task.hazard;
+            hazardInput.value = task.hazard;
             taskLikelihood.value = task.likelihood;
             taskSeverity.value = task.severity;
             controls.value = task.controls;
-            taskModal.classList.remove('hidden');
+            
+            openModal();
         }
         
         function deleteTask(index) {
@@ -840,7 +888,7 @@
                 return;
             }
             
-            if (!hazard.value.trim()) {
+            if (!hazardInput.value.trim()) {
                 alert("Hazard identification is required");
                 return;
             }
@@ -852,7 +900,7 @@
             
             const task = {
                 name: taskName.value,
-                hazard: hazard.value,
+                hazard: hazardInput.value,
                 likelihood: taskLikelihood.value,
                 severity: taskSeverity.value,
                 controls: controls.value
@@ -865,7 +913,7 @@
             }
             
             renderTasksTable();
-            taskModal.classList.add('hidden');
+            closeModal();
         }
         
         // Data management functions
@@ -1018,14 +1066,20 @@
         clearBtn.addEventListener('click', clearForm);
         
         saveTaskBtn.addEventListener('click', saveTask);
-        cancelTaskBtn.addEventListener('click', () => {
-            taskModal.classList.add('hidden');
-        });
+        cancelTaskBtn.addEventListener('click', closeModal);
+        closeModalBtn.addEventListener('click', closeModal);
         
         // Close modal when clicking outside
-        window.addEventListener('click', (event) => {
+        taskModal.addEventListener('click', (event) => {
             if (event.target === taskModal) {
-                taskModal.classList.add('hidden');
+                closeModal();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && taskModal.classList.contains('active')) {
+                closeModal();
             }
         });
         

@@ -431,6 +431,24 @@
         .close-modal:hover {
             color: var(--danger-color);
         }
+        
+        /* Fix matrix cell colors to match actual risk levels */
+        .risk-score-1, .risk-score-2, .risk-score-3 { 
+            background-color: #d4edda !important; 
+            color: #155724 !important; 
+        }
+        .risk-score-4, .risk-score-5, .risk-score-6, .risk-score-8, .risk-score-9 { 
+            background-color: #fff3cd !important; 
+            color: #856404 !important; 
+        }
+        .risk-score-10, .risk-score-12, .risk-score-15, .risk-score-16 { 
+            background-color: #f8d7da !important; 
+            color: #721c24 !important; 
+        }
+        .risk-score-20, .risk-score-25 { 
+            background-color: #f5c6cb !important; 
+            color: #721c24 !important; 
+        }
     </style>
 </head>
 <body>
@@ -539,11 +557,11 @@
                     </div>
                     <div class="legend-item">
                         <div class="legend-color legend-medium"></div>
-                        <span>Medium Risk (4-8)</span>
+                        <span>Medium Risk (4-9)</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color legend-high"></div>
-                        <span>High Risk (9-16)</span>
+                        <span>High Risk (10-16)</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color legend-extreme"></div>
@@ -777,8 +795,9 @@
         }
         
         function getRiskLevel(score) {
+            // Fixed risk level calculation based on the matrix
             if (score <= 3) return { level: "Low Risk", className: "low-risk" };
-            if (score <= 8) return { level: "Medium Risk", className: "medium-risk" };
+            if (score <= 9) return { level: "Medium Risk", className: "medium-risk" };
             if (score <= 16) return { level: "High Risk", className: "high-risk" };
             return { level: "Extreme Risk", className: "extreme-risk" };
         }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Field Excursion Risk Assessment - Australian Standards</title>
+    <title>Risk Assessment - Field Excursion & Campus Activities</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Add jsPDF library for PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -11,15 +11,13 @@
     <style>
         :root {
             --primary-color: #2c3e50;
-            --secondary-color: #27ae60; /* Green for conservation/ecology theme */
+            --field-color: #27ae60; /* Green for field excursions */
+            --campus-color: #3498db; /* Blue for campus activities */
             --danger-color: #e74c3c;
             --warning-color: #f39c12;
             --success-color: #27ae60;
             --light-color: #ecf0f1;
             --dark-color: #34495e;
-            --nature-green: #27ae60;
-            --earth-brown: #8B4513;
-            --sky-blue: #3498db;
             --border-radius: 6px;
             --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
@@ -41,7 +39,7 @@
         }
         
         header {
-            background: linear-gradient(to right, var(--primary-color), var(--nature-green));
+            background: linear-gradient(to right, var(--primary-color), var(--field-color));
             color: white;
             padding: 20px;
             border-radius: var(--border-radius);
@@ -52,6 +50,10 @@
             align-items: center;
         }
         
+        body.campus-mode header {
+            background: linear-gradient(to right, var(--primary-color), var(--campus-color));
+        }
+        
         h1 {
             font-size: 1.8rem;
             margin-bottom: 5px;
@@ -59,10 +61,14 @@
         
         h2 {
             color: var(--primary-color);
-            border-bottom: 2px solid var(--nature-green);
+            border-bottom: 2px solid var(--field-color);
             padding-bottom: 8px;
             margin: 25px 0 15px 0;
             font-size: 1.4rem;
+        }
+        
+        body.campus-mode h2 {
+            border-bottom-color: var(--campus-color);
         }
         
         h3 {
@@ -117,8 +123,14 @@
         }
         
         input:focus, select:focus, textarea:focus {
-            border-color: var(--nature-green);
+            border-color: var(--field-color);
             outline: none;
+        }
+        
+        body.campus-mode input:focus, 
+        body.campus-mode select:focus, 
+        body.campus-mode textarea:focus {
+            border-color: var(--campus-color);
         }
         
         .form-row {
@@ -258,12 +270,20 @@
         }
         
         .btn-primary {
-            background-color: var(--nature-green);
+            background-color: var(--field-color);
             color: white;
+        }
+        
+        body.campus-mode .btn-primary {
+            background-color: var(--campus-color);
         }
         
         .btn-primary:hover {
             background-color: #219653;
+        }
+        
+        body.campus-mode .btn-primary:hover {
+            background-color: #2980b9;
         }
         
         .btn-success {
@@ -294,7 +314,7 @@
         }
         
         .btn-info {
-            background-color: var(--sky-blue);
+            background-color: var(--campus-color);
             color: white;
         }
         
@@ -317,7 +337,11 @@
             padding: 15px;
             border-radius: var(--border-radius);
             margin-top: 15px;
-            border-left: 5px solid var(--nature-green);
+            border-left: 5px solid var(--field-color);
+        }
+        
+        body.campus-mode .risk-result {
+            border-left-color: var(--campus-color);
         }
         
         .risk-level {
@@ -451,17 +475,6 @@
             color: var(--danger-color);
         }
         
-        .excursion-tag {
-            display: inline-block;
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            margin-right: 8px;
-            margin-bottom: 8px;
-        }
-        
         .tag-container {
             display: flex;
             flex-wrap: wrap;
@@ -475,8 +488,12 @@
             border-radius: var(--border-radius);
             margin-bottom: 10px;
             cursor: pointer;
-            border-left: 4px solid var(--nature-green);
+            border-left: 4px solid var(--field-color);
             transition: all 0.2s;
+        }
+        
+        body.campus-mode .predefined-activity {
+            border-left-color: var(--campus-color);
         }
         
         .predefined-activity:hover {
@@ -500,7 +517,11 @@
             padding: 15px;
             border-radius: var(--border-radius);
             margin-top: 15px;
-            border-left: 4px solid var(--nature-green);
+            border-left: 4px solid var(--field-color);
+        }
+        
+        body.campus-mode .summary-box {
+            border-left-color: var(--campus-color);
         }
         
         .summary-item {
@@ -526,8 +547,12 @@
             height: 20px;
             border: 3px solid rgba(0,0,0,.1);
             border-radius: 50%;
-            border-top-color: var(--nature-green);
+            border-top-color: var(--field-color);
             animation: spin 1s ease-in-out infinite;
+        }
+        
+        body.campus-mode .loading {
+            border-top-color: var(--campus-color);
         }
         
         @keyframes spin {
@@ -548,10 +573,165 @@
         .safety-risk { background-color: #fff3cd; color: #856404; }
         .health-risk { background-color: #f8d7da; color: #721c24; }
         .logistical-risk { background-color: #e3f2fd; color: #1565c0; }
-        .weather-risk { background-color: #e0f7fa; color: #006064; }
+        .chemical-risk { background-color: #f3e5f5; color: #4a148c; }
+        .equipment-risk { background-color: #e0f2f1; color: #004d40; }
         
         .print-only {
             display: none;
+        }
+        
+        /* Tooltip styling */
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip-container .tooltip-text {
+            visibility: hidden;
+            width: 300px;
+            background-color: var(--primary-color);
+            color: white;
+            text-align: left;
+            padding: 12px;
+            border-radius: var(--border-radius);
+            position: absolute;
+            z-index: 1001;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .tooltip-container .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--primary-color) transparent transparent transparent;
+        }
+        
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .definition-icon {
+            color: var(--campus-color);
+            margin-left: 5px;
+            cursor: help;
+        }
+        
+        .definition-box {
+            background-color: #f0f9ff;
+            border-left: 4px solid var(--campus-color);
+            padding: 12px;
+            border-radius: var(--border-radius);
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .definition-box h4 {
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        
+        .definition-list {
+            margin-left: 15px;
+        }
+        
+        .definition-list li {
+            margin-bottom: 5px;
+        }
+        
+        .compliance-checklist {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+            border: 1px solid #ddd;
+        }
+        
+        .compliance-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .compliance-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .compliance-check {
+            color: var(--success-color);
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .compliance-text {
+            flex: 1;
+        }
+        
+        .compliance-ref {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 3px;
+        }
+        
+        /* Mode toggle */
+        .mode-toggle {
+            display: flex;
+            background-color: #f1f1f1;
+            border-radius: var(--border-radius);
+            padding: 4px;
+            margin-bottom: 15px;
+            width: fit-content;
+        }
+        
+        .mode-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .mode-btn.active {
+            background-color: var(--field-color);
+            color: white;
+        }
+        
+        body.campus-mode .mode-btn.active {
+            background-color: var(--campus-color);
+        }
+        
+        /* Activity type sections */
+        .activity-type-section {
+            display: none;
+        }
+        
+        .activity-type-section.active {
+            display: block;
+        }
+        
+        @media (max-width: 900px) {
+            .tooltip-container .tooltip-text {
+                width: 250px;
+                margin-left: -125px;
+            }
         }
         
         @media print {
@@ -578,7 +758,7 @@
                 display: block;
             }
             
-            .button-group, .task-controls, footer {
+            .button-group, .task-controls, footer, .mode-toggle {
                 display: none;
             }
             
@@ -586,22 +766,31 @@
                 box-shadow: none;
                 margin-bottom: 15px;
             }
+            
+            .tooltip-container .tooltip-text {
+                display: none !important;
+            }
         }
     </style>
 </head>
 <body>
     <header>
         <div>
-            <h1><i class="fas fa-leaf"></i> Field Excursion Risk Assessment</h1>
+            <h1><i class="fas fa-leaf"></i> Risk Assessment Tool</h1>
             <p class="subtitle">Conservation & Ecosystem Management - Compliant with Australian Standards</p>
         </div>
         <div id="statusBadge" class="status-badge status-draft">DRAFT</div>
     </header>
     
+    <div class="mode-toggle">
+        <button id="fieldModeBtn" class="mode-btn active"><i class="fas fa-tree"></i> Field Excursion</button>
+        <button id="campusModeBtn" class="mode-btn"><i class="fas fa-university"></i> Campus Activity</button>
+    </div>
+    
     <div class="container">
         <div class="left-column">
             <div class="section">
-                <h2><i class="fas fa-info-circle"></i> Excursion Details</h2>
+                <h2><i class="fas fa-info-circle"></i> Activity Details</h2>
                 
                 <div class="form-row">
                     <div class="form-group">
@@ -610,29 +799,79 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="excursionDate" class="required">Excursion Date</label>
-                        <input type="date" id="excursionDate" value="">
+                        <label for="activityDate" class="required">Activity Date</label>
+                        <input type="date" id="activityDate" value="">
                     </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="location" class="required">Field Location / Site</label>
-                    <input type="text" id="location" placeholder="Enter field site location">
+                <!-- Field Excursion Details -->
+                <div id="fieldDetails" class="activity-type-section active">
+                    <div class="form-group">
+                        <label for="location" class="required">Field Location / Site</label>
+                        <input type="text" id="location" placeholder="Enter field site location">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="activityType">Excursion Type</label>
+                        <select id="activityType">
+                            <option value="">Select type...</option>
+                            <option value="field_survey">Field Survey</option>
+                            <option value="species_monitoring">Species Monitoring</option>
+                            <option value="habitat_assessment">Habitat Assessment</option>
+                            <option value="water_quality">Water Quality Testing</option>
+                            <option value="vegetation_survey">Vegetation Survey</option>
+                            <option value="soil_sampling">Soil Sampling</option>
+                            <option value="restoration">Restoration Activity</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weatherConditions">Weather Conditions / Forecast</label>
+                        <textarea id="weatherConditions" rows="2" placeholder="Expected weather, temperature, UV index, etc."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="transportDetails">Transport Details</label>
+                        <input type="text" id="transportDetails" placeholder="Vehicle details, meeting point, etc.">
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="excursionType">Excursion Type</label>
-                    <select id="excursionType">
-                        <option value="">Select type...</option>
-                        <option value="field_survey">Field Survey</option>
-                        <option value="species_monitoring">Species Monitoring</option>
-                        <option value="habitat_assessment">Habitat Assessment</option>
-                        <option value="water_quality">Water Quality Testing</option>
-                        <option value="vegetation_survey">Vegetation Survey</option>
-                        <option value="soil_sampling">Soil Sampling</option>
-                        <option value="restoration">Restoration Activity</option>
-                        <option value="other">Other</option>
-                    </select>
+                <!-- Campus Activity Details -->
+                <div id="campusDetails" class="activity-type-section">
+                    <div class="form-group">
+                        <label for="campusLocation" class="required">Campus Location</label>
+                        <select id="campusLocation">
+                            <option value="">Select location...</option>
+                            <option value="nursery">Plant Nursery</option>
+                            <option value="glasshouse">Glasshouse</option>
+                            <option value="laboratory">Laboratory</option>
+                            <option value="workshop">Workshop</option>
+                            <option value="classroom">Classroom</option>
+                            <option value="storage">Storage Facility</option>
+                            <option value="other_campus">Other Campus Location</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="campusActivityType">Activity Type</label>
+                        <select id="campusActivityType">
+                            <option value="">Select type...</option>
+                            <option value="propagating">Plant Propagation</option>
+                            <option value="potting">Potting & Repotting</option>
+                            <option value="pruning">Pruning & Grafting</option>
+                            <option value="soil_mixing">Soil Mixing</option>
+                            <option value="fertilizing">Fertilizing</option>
+                            <option value="equipment_maintenance">Equipment Maintenance</option>
+                            <option value="chemical_handling">Chemical Handling</option>
+                            <option value="other_campus_activity">Other Campus Activity</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="roomNumber">Room/Facility Number</label>
+                        <input type="text" id="roomNumber" placeholder="e.g., N-101, Glasshouse 3">
+                    </div>
                 </div>
                 
                 <div class="form-row">
@@ -642,8 +881,8 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="supervisor" class="required">Field Supervisor</label>
-                        <input type="text" id="supervisor" placeholder="Field supervisor name">
+                        <label for="supervisor" class="required">Activity Supervisor</label>
+                        <input type="text" id="supervisor" placeholder="Supervisor name">
                     </div>
                 </div>
                 
@@ -668,10 +907,11 @@
             </div>
             
             <div class="section">
-                <h2><i class="fas fa-tasks"></i> Predefined Field Activities</h2>
-                <p class="notes">Click to add common conservation field activities to your assessment:</p>
+                <h2><i class="fas fa-tasks"></i> Predefined Activities</h2>
+                <p class="notes">Click to add common activities to your assessment:</p>
                 
-                <div id="predefinedActivities">
+                <!-- Field Activities -->
+                <div id="fieldActivities" class="activity-type-section active">
                     <div class="predefined-activity" data-activity="Vegetation Survey">
                         <div class="activity-title">Vegetation Survey</div>
                         <div class="activity-desc">Plant identification, quadrat sampling, transect surveys</div>
@@ -691,10 +931,33 @@
                         <div class="activity-title">Habitat Assessment</div>
                         <div class="activity-desc">Habitat quality scoring, vegetation structure assessment</div>
                     </div>
+                </div>
+                
+                <!-- Campus Activities -->
+                <div id="campusActivities" class="activity-type-section">
+                    <div class="predefined-activity" data-activity="Plant Propagation">
+                        <div class="activity-title">Plant Propagation</div>
+                        <div class="activity-desc">Seed sowing, cuttings, division, grafting techniques</div>
+                    </div>
                     
-                    <div class="predefined-activity" data-activity="Field Equipment Use">
-                        <div class="activity-title">Field Equipment Use</div>
-                        <div class="activity-desc">GPS, compass, clinometer, surveying equipment</div>
+                    <div class="predefined-activity" data-activity="Potting & Repotting">
+                        <div class="activity-title">Potting & Repotting</div>
+                        <div class="activity-desc">Potting up seedlings, repotting established plants</div>
+                    </div>
+                    
+                    <div class="predefined-activity" data-activity="Soil Mixing">
+                        <div class="activity-title">Soil Mixing</div>
+                        <div class="activity-desc">Mixing potting media, adding amendments, sterilizing soil</div>
+                    </div>
+                    
+                    <div class="predefined-activity" data-activity="Pruning & Grafting">
+                        <div class="activity-title">Pruning & Grafting</div>
+                        <div class="activity-desc">Using secateurs, pruning saws, grafting knives</div>
+                    </div>
+                    
+                    <div class="predefined-activity" data-activity="Chemical Handling">
+                        <div class="activity-title">Chemical Handling</div>
+                        <div class="activity-desc">Fertilizers, pesticides, herbicides, cleaning agents</div>
                     </div>
                 </div>
             </div>
@@ -765,13 +1028,39 @@
                         <span>Extreme Risk (17-25)</span>
                     </div>
                 </div>
+                
+                <div class="definition-box">
+                    <h4><i class="fas fa-info-circle"></i> Risk Assessment Definitions</h4>
+                    <div class="form-row">
+                        <div>
+                            <strong>Likelihood Definitions:</strong>
+                            <ul class="definition-list">
+                                <li><strong>Rare:</strong> May occur only in exceptional circumstances (&lt;1% chance)</li>
+                                <li><strong>Unlikely:</strong> Could occur but not expected (1-10% chance)</li>
+                                <li><strong>Possible:</strong> Might occur at some time (10-50% chance)</li>
+                                <li><strong>Likely:</strong> Will probably occur (50-90% chance)</li>
+                                <li><strong>Almost Certain:</strong> Expected to occur (&gt;90% chance)</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <strong>Severity Definitions:</strong>
+                            <ul class="definition-list">
+                                <li><strong>Insignificant:</strong> No injury, negligible financial loss</li>
+                                <li><strong>Minor:</strong> First aid injury, minor property damage</li>
+                                <li><strong>Moderate:</strong> Medical treatment, moderate property damage</li>
+                                <li><strong>Major:</strong> Serious injury, major property damage</li>
+                                <li><strong>Catastrophic:</strong> Fatality, permanent disability, major environmental damage</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
         <div class="right-column">
             <div class="section">
-                <h2><i class="fas fa-table"></i> Field Activities & Risks</h2>
-                <p class="notes">Add field activities with associated risks. Use risk categories for better organization.</p>
+                <h2><i class="fas fa-table"></i> Activities & Risks</h2>
+                <p class="notes" id="activitiesDescription">Add field activities with associated risks. Use risk categories for better organization.</p>
                 
                 <div class="task-controls">
                     <button id="addTaskBtn" class="btn btn-primary">
@@ -826,7 +1115,7 @@
             
             <div class="section">
                 <h2><i class="fas fa-file-export"></i> Export & Compliance</h2>
-                <p class="notes">Generate professional reports for field excursions and compliance documentation.</p>
+                <p class="notes">Generate professional reports for activities and compliance documentation.</p>
                 
                 <div class="button-group">
                     <button id="saveBtn" class="btn btn-success">
@@ -849,16 +1138,15 @@
                     <button id="printBtn" class="btn btn-info">
                         <i class="fas fa-print"></i> Print
                     </button>
+                    
+                    <button id="clearBtn" class="btn btn-warning">
+                        <i class="fas fa-broom"></i> Clear Form
+                    </button>
                 </div>
                 
                 <div class="form-group" style="margin-top: 20px;">
-                    <label for="weatherConditions">Weather Conditions / Forecast</label>
-                    <textarea id="weatherConditions" rows="2" placeholder="Expected weather, temperature, UV index, etc."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="requiredEquipment">Required Equipment</label>
-                    <textarea id="requiredEquipment" rows="3" placeholder="List required field equipment, PPE, first aid, communication, etc."></textarea>
+                    <label for="requiredEquipment">Required Equipment & PPE</label>
+                    <textarea id="requiredEquipment" rows="3" placeholder="List required equipment, PPE, first aid, communication, etc."></textarea>
                 </div>
                 
                 <div class="form-group">
@@ -868,15 +1156,76 @@
             </div>
             
             <div class="section">
-                <h2><i class="fas fa-certificate"></i> Standards & Compliance</h2>
-                <p>This field excursion risk assessment form complies with:</p>
-                <ul style="padding-left: 20px; margin-top: 10px;">
-                    <li><strong>AS/NZS ISO 31000:2018</strong> - Risk management guidelines</li>
-                    <li><strong>AS/NZS 4801:2001</strong> - Occupational health and safety management</li>
-                    <li><strong>Education Department Excursion Guidelines</strong> - Field trip requirements</li>
-                    <li><strong>Work Health and Safety Act 2011</strong> - Duty of care obligations</li>
-                </ul>
-                <p class="notes" style="margin-top: 10px;">For conservation field work: Always conduct a site reconnaissance, check weather forecasts, ensure appropriate PPE, and have emergency communication plans.</p>
+                <h2><i class="fas fa-question-circle"></i> Risk Assessment Calculator</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="likelihood">
+                            Likelihood
+                            <span class="tooltip-container">
+                                <i class="fas fa-info-circle definition-icon"></i>
+                                <span class="tooltip-text">
+                                    <strong>Likelihood Definitions:</strong><br>
+                                    • <strong>Rare (1):</strong> May occur only in exceptional circumstances (&lt;1% chance)<br>
+                                    • <strong>Unlikely (2):</strong> Could occur but not expected (1-10% chance)<br>
+                                    • <strong>Possible (3):</strong> Might occur at some time (10-50% chance)<br>
+                                    • <strong>Likely (4):</strong> Will probably occur (50-90% chance)<br>
+                                    • <strong>Almost Certain (5):</strong> Expected to occur (&gt;90% chance)
+                                </span>
+                            </span>
+                        </label>
+                        <select id="likelihood">
+                            <option value="1">Rare (1)</option>
+                            <option value="2">Unlikely (2)</option>
+                            <option value="3" selected>Possible (3)</option>
+                            <option value="4">Likely (4)</option>
+                            <option value="5">Almost Certain (5)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="severity">
+                            Severity
+                            <span class="tooltip-container">
+                                <i class="fas fa-info-circle definition-icon"></i>
+                                <span class="tooltip-text">
+                                    <strong>Severity Definitions:</strong><br>
+                                    • <strong>Insignificant (1):</strong> No injury, negligible financial loss<br>
+                                    • <strong>Minor (2):</strong> First aid injury, minor property damage<br>
+                                    • <strong>Moderate (3):</strong> Medical treatment, moderate property damage<br>
+                                    • <strong>Major (4):</strong> Serious injury, major property damage<br>
+                                    • <strong>Catastrophic (5):</strong> Fatality, permanent disability, major environmental damage
+                                </span>
+                            </span>
+                        </label>
+                        <select id="severity">
+                            <option value="1">Insignificant (1)</option>
+                            <option value="2">Minor (2)</option>
+                            <option value="3" selected>Moderate (3)</option>
+                            <option value="4">Major (4)</option>
+                            <option value="5">Catastrophic (5)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="risk-result">
+                    <div>
+                        <strong>Calculated Risk Score:</strong>
+                        <div id="calculatedScore" style="font-size: 1.5rem; margin-top: 5px;">9</div>
+                    </div>
+                    <div>
+                        <strong>Risk Level:</strong>
+                        <div id="riskLevel" class="risk-level medium-risk">Medium Risk</div>
+                    </div>
+                </div>
+                
+                <div class="notes" style="margin-top: 10px;">
+                    <strong>Risk Level Action Guide:</strong><br>
+                    • <strong>Low Risk:</strong> Monitor periodically, maintain controls<br>
+                    • <strong>Medium Risk:</strong> Specific monitoring required, review controls annually<br>
+                    • <strong>High Risk:</strong> Immediate attention required, implement additional controls<br>
+                    • <strong>Extreme Risk:</strong> Activity should not proceed until risk is reduced
+                </div>
             </div>
         </div>
     </div>
@@ -884,10 +1233,10 @@
     <div id="taskModal" class="modal">
         <div class="modal-content">
             <button class="close-modal" id="closeModalBtn">&times;</button>
-            <h3 id="modalTitle">Add Field Activity</h3>
+            <h3 id="modalTitle">Add Activity</h3>
             <div class="form-group">
-                <label for="taskName" class="required">Field Activity</label>
-                <input type="text" id="taskName" placeholder="Describe the field activity">
+                <label for="taskName" class="required">Activity Description</label>
+                <input type="text" id="taskName" placeholder="Describe the activity">
             </div>
             
             <div class="form-group">
@@ -903,12 +1252,26 @@
                         <option value="safety">Safety</option>
                         <option value="health">Health</option>
                         <option value="logistical">Logistical</option>
-                        <option value="weather">Weather</option>
+                        <option value="chemical">Chemical</option>
+                        <option value="equipment">Equipment</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label for="taskLikelihood" class="required">Likelihood</label>
+                    <label for="taskLikelihood" class="required">
+                        Likelihood
+                        <span class="tooltip-container">
+                            <i class="fas fa-info-circle definition-icon"></i>
+                            <span class="tooltip-text">
+                                <strong>Likelihood Definitions:</strong><br>
+                                • <strong>Rare (1):</strong> May occur only in exceptional circumstances (&lt;1% chance)<br>
+                                • <strong>Unlikely (2):</strong> Could occur but not expected (1-10% chance)<br>
+                                • <strong>Possible (3):</strong> Might occur at some time (10-50% chance)<br>
+                                • <strong>Likely (4):</strong> Will probably occur (50-90% chance)<br>
+                                • <strong>Almost Certain (5):</strong> Expected to occur (&gt;90% chance)
+                            </span>
+                        </span>
+                    </label>
                     <select id="taskLikelihood">
                         <option value="1">Rare (1)</option>
                         <option value="2">Unlikely (2)</option>
@@ -921,7 +1284,20 @@
             
             <div class="form-row">
                 <div class="form-group">
-                    <label for="taskSeverity" class="required">Severity</label>
+                    <label for="taskSeverity" class="required">
+                        Severity
+                        <span class="tooltip-container">
+                            <i class="fas fa-info-circle definition-icon"></i>
+                            <span class="tooltip-text">
+                                <strong>Severity Definitions:</strong><br>
+                                • <strong>Insignificant (1):</strong> No injury, negligible financial loss<br>
+                                • <strong>Minor (2):</strong> First aid injury, minor property damage<br>
+                                • <strong>Moderate (3):</strong> Medical treatment, moderate property damage<br>
+                                • <strong>Major (4):</strong> Serious injury, major property damage<br>
+                                • <strong>Catastrophic (5):</strong> Fatality, permanent disability, major environmental damage
+                            </span>
+                        </span>
+                    </label>
                     <select id="taskSeverity">
                         <option value="1">Insignificant (1)</option>
                         <option value="2">Minor (2)</option>
@@ -950,16 +1326,20 @@
     </div>
     
     <footer>
-        <p>Field Excursion Risk Assessment v2.0 | Conservation & Ecosystem Management | Compliant with Australian Standards</p>
-        <p>© 2023 University Conservation Program | For official field excursion use only</p>
+        <p>Risk Assessment Tool v2.2 | Conservation & Ecosystem Management | Compliant with Australian Standards</p>
+        <p>© 2023 University Conservation Program | For official field and campus activities</p>
+        <p class="notes" style="margin-top: 10px;">
+            <strong>Disclaimer:</strong> This tool assists with risk assessment but does not replace professional safety advice. 
+            Always consult with your institutional Work Health and Safety officer for final approval.
+        </p>
     </footer>
 
     <script>
         // DOM Elements
         const assessmentDate = document.getElementById('assessmentDate');
-        const excursionDate = document.getElementById('excursionDate');
+        const activityDate = document.getElementById('activityDate');
         const locationInput = document.getElementById('location');
-        const excursionType = document.getElementById('excursionType');
+        const activityType = document.getElementById('activityType');
         const assessmentBy = document.getElementById('assessmentBy');
         const supervisor = document.getElementById('supervisor');
         const participants = document.getElementById('participants');
@@ -968,11 +1348,21 @@
         const assessmentNotes = document.getElementById('assessmentNotes');
         const weatherConditions = document.getElementById('weatherConditions');
         const requiredEquipment = document.getElementById('requiredEquipment');
+        const transportDetails = document.getElementById('transportDetails');
+        const campusLocation = document.getElementById('campusLocation');
+        const campusActivityType = document.getElementById('campusActivityType');
+        const roomNumber = document.getElementById('roomNumber');
         const statusBadge = document.getElementById('statusBadge');
+        const likelihood = document.getElementById('likelihood');
+        const severity = document.getElementById('severity');
+        const calculatedScore = document.getElementById('calculatedScore');
+        const riskLevel = document.getElementById('riskLevel');
+        const activitiesDescription = document.getElementById('activitiesDescription');
         
         const tasksTableBody = document.getElementById('tasksTableBody');
         const noTasksMessage = document.getElementById('noTasksMessage');
-        const predefinedActivities = document.getElementById('predefinedActivities');
+        const fieldActivities = document.getElementById('fieldActivities');
+        const campusActivities = document.getElementById('campusActivities');
         
         const addTaskBtn = document.getElementById('addTaskBtn');
         const clearTasksBtn = document.getElementById('clearTasksBtn');
@@ -981,6 +1371,9 @@
         const exportBtn = document.getElementById('exportBtn');
         const importFile = document.getElementById('importFile');
         const printBtn = document.getElementById('printBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const fieldModeBtn = document.getElementById('fieldModeBtn');
+        const campusModeBtn = document.getElementById('campusModeBtn');
         
         const taskModal = document.getElementById('taskModal');
         const modalTitle = document.getElementById('modalTitle');
@@ -1006,10 +1399,13 @@
         const todayStr = today.toISOString().split('T')[0];
         assessmentDate.value = todayStr;
         
-        // Set excursion date to 7 days from now
-        const excursion = new Date();
-        excursion.setDate(excursion.getDate() + 7);
-        excursionDate.value = excursion.toISOString().split('T')[0];
+        // Set activity date to 7 days from now
+        const activity = new Date();
+        activity.setDate(activity.getDate() + 7);
+        activityDate.value = activity.toISOString().split('T')[0];
+        
+        // Mode tracking
+        let isCampusMode = false;
         
         // Tasks data
         let tasks = [];
@@ -1033,7 +1429,8 @@
                 case 'safety': return 'safety-risk';
                 case 'health': return 'health-risk';
                 case 'logistical': return 'logistical-risk';
-                case 'weather': return 'weather-risk';
+                case 'chemical': return 'chemical-risk';
+                case 'equipment': return 'equipment-risk';
                 default: return 'environmental-risk';
             }
         }
@@ -1044,9 +1441,20 @@
                 case 'safety': return 'Safety';
                 case 'health': return 'Health';
                 case 'logistical': return 'Logistical';
-                case 'weather': return 'Weather';
+                case 'chemical': return 'Chemical';
+                case 'equipment': return 'Equipment';
                 default: return 'Environmental';
             }
+        }
+        
+        // Update risk calculator display
+        function updateRiskDisplay() {
+            const score = calculateRiskScore(likelihood.value, severity.value);
+            const risk = getRiskLevel(score);
+            
+            calculatedScore.textContent = score;
+            riskLevel.textContent = risk.level;
+            riskLevel.className = `risk-level ${risk.className}`;
         }
         
         // Update risk summary
@@ -1100,6 +1508,41 @@
             statusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
         }
         
+        // Toggle between field and campus modes
+        function setCampusMode(isCampus) {
+            isCampusMode = isCampus;
+            
+            if (isCampus) {
+                document.body.classList.add('campus-mode');
+                campusModeBtn.classList.add('active');
+                fieldModeBtn.classList.remove('active');
+                
+                // Show campus sections, hide field sections
+                document.getElementById('campusDetails').classList.add('active');
+                document.getElementById('fieldDetails').classList.remove('active');
+                document.getElementById('campusActivities').classList.add('active');
+                document.getElementById('fieldActivities').classList.remove('active');
+                
+                // Update descriptions
+                activitiesDescription.textContent = "Add campus activities with associated risks. Use risk categories for better organization.";
+                modalTitle.textContent = "Add Campus Activity";
+            } else {
+                document.body.classList.remove('campus-mode');
+                fieldModeBtn.classList.add('active');
+                campusModeBtn.classList.remove('active');
+                
+                // Show field sections, hide campus sections
+                document.getElementById('fieldDetails').classList.add('active');
+                document.getElementById('campusDetails').classList.remove('active');
+                document.getElementById('fieldActivities').classList.add('active');
+                document.getElementById('campusActivities').classList.remove('active');
+                
+                // Update descriptions
+                activitiesDescription.textContent = "Add field activities with associated risks. Use risk categories for better organization.";
+                modalTitle.textContent = "Add Field Activity";
+            }
+        }
+        
         // Modal functions
         function openModal() {
             taskModal.classList.add('active');
@@ -1114,7 +1557,7 @@
         
         function resetModalForm() {
             editingTaskIndex = -1;
-            modalTitle.textContent = "Add Field Activity";
+            modalTitle.textContent = isCampusMode ? "Add Campus Activity" : "Add Field Activity";
             taskName.value = '';
             hazardInput.value = '';
             riskCategory.value = 'environmental';
@@ -1231,8 +1674,9 @@
         
         // Predefined activities
         function setupPredefinedActivities() {
-            const activityElements = predefinedActivities.querySelectorAll('.predefined-activity');
-            activityElements.forEach(element => {
+            // Field activities
+            const fieldActivityElements = fieldActivities.querySelectorAll('.predefined-activity');
+            fieldActivityElements.forEach(element => {
                 element.addEventListener('click', function() {
                     const activityName = this.getAttribute('data-activity');
                     
@@ -1253,9 +1697,39 @@
                     } else if (activityName === 'Habitat Assessment') {
                         hazardInput.value = 'Uneven terrain, trips and falls, remote location risks, weather exposure';
                         controls.value = 'Site reconnaissance, appropriate footwear, weather-appropriate clothing, communication devices, first aid training';
-                    } else if (activityName === 'Field Equipment Use') {
-                        hazardInput.value = 'Equipment misuse, trip hazards from cables/tripods, eye injuries, repetitive strain';
-                        controls.value = 'Equipment training, proper setup procedures, regular breaks, PPE (safety glasses), equipment maintenance checks';
+                    }
+                    
+                    personResponsible.value = supervisor.value || assessmentBy.value;
+                    openModal();
+                });
+            });
+            
+            // Campus activities
+            const campusActivityElements = campusActivities.querySelectorAll('.predefined-activity');
+            campusActivityElements.forEach(element => {
+                element.addEventListener('click', function() {
+                    const activityName = this.getAttribute('data-activity');
+                    
+                    // Set the modal with predefined activity
+                    resetModalForm();
+                    taskName.value = activityName;
+                    
+                    // Set appropriate hazards based on activity
+                    if (activityName === 'Plant Propagation') {
+                        hazardInput.value = 'Cuts from tools, skin irritation from plants, ergonomic strain, slips on wet surfaces';
+                        controls.value = 'Tool safety training, wear gloves, use ergonomic tools, clean spills immediately, proper workstation setup';
+                    } else if (activityName === 'Potting & Repotting') {
+                        hazardInput.value = 'Back strain from lifting, cuts from broken pots, dust inhalation, slips/trips';
+                        controls.value = 'Manual handling training, use trolleys for heavy items, wear gloves and mask, keep work area tidy';
+                    } else if (activityName === 'Soil Mixing') {
+                        hazardInput.value = 'Dust inhalation, chemical exposure from amendments, musculoskeletal strain, eye injuries';
+                        controls.value = 'Wear dust mask and safety glasses, use mechanical mixer for large batches, proper lifting techniques, adequate ventilation';
+                    } else if (activityName === 'Pruning & Grafting') {
+                        hazardInput.value = 'Cuts from sharp tools, repetitive strain, infection from dirty tools, eye injuries from flying debris';
+                        controls.value = 'Tool safety training, wear cut-resistant gloves, sterilize tools between plants, safety glasses, regular breaks';
+                    } else if (activityName === 'Chemical Handling') {
+                        hazardInput.value = 'Chemical exposure, skin burns, inhalation of fumes, environmental contamination';
+                        controls.value = 'Chemical safety training, wear appropriate PPE (gloves, goggles, apron), use fume hood, follow SDS instructions, proper storage';
                     }
                     
                     personResponsible.value = supervisor.value || assessmentBy.value;
@@ -1267,29 +1741,40 @@
         // Data management functions
         function collectFormData() {
             const data = {
+                mode: isCampusMode ? 'campus' : 'field',
                 assessmentDate: assessmentDate.value,
-                excursionDate: excursionDate.value,
-                location: locationInput.value,
-                excursionType: excursionType.value,
+                activityDate: activityDate.value,
                 assessedBy: assessmentBy.value,
                 supervisor: supervisor.value,
                 participants: participants.value,
                 emergencyContact: emergencyContact.value,
                 status: assessmentStatus.value,
-                weatherConditions: weatherConditions.value,
                 requiredEquipment: requiredEquipment.value,
                 notes: assessmentNotes.value,
                 tasks: tasks,
                 lastSaved: new Date().toISOString(),
-                version: '2.0'
+                version: '2.2'
             };
+            
+            // Add mode-specific data
+            if (isCampusMode) {
+                data.campusLocation = campusLocation.value;
+                data.campusActivityType = campusActivityType.value;
+                data.roomNumber = roomNumber.value;
+                data.location = `Campus: ${campusLocation.options[campusLocation.selectedIndex].text}`;
+            } else {
+                data.location = locationInput.value;
+                data.activityType = activityType.value;
+                data.weatherConditions = weatherConditions.value;
+                data.transportDetails = transportDetails.value;
+            }
             
             return data;
         }
         
         function saveAssessment() {
             const data = collectFormData();
-            localStorage.setItem('fieldExcursionRiskAssessment', JSON.stringify(data));
+            localStorage.setItem('conservationRiskAssessment', JSON.stringify(data));
             alert("Assessment saved to browser storage successfully!");
         }
         
@@ -1298,7 +1783,8 @@
             const dataStr = JSON.stringify(data, null, 2);
             const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
             
-            const exportFileDefaultName = `field-excursion-risk-assessment-${new Date().toISOString().split('T')[0]}.json`;
+            const modePrefix = isCampusMode ? 'campus' : 'field';
+            const exportFileDefaultName = `${modePrefix}-risk-assessment-${new Date().toISOString().split('T')[0]}.json`;
             
             const linkElement = document.createElement('a');
             linkElement.setAttribute('href', dataUri);
@@ -1328,19 +1814,35 @@
         }
         
         function loadFormData(data) {
+            // Set mode first
+            if (data.mode === 'campus') {
+                setCampusMode(true);
+            } else {
+                setCampusMode(false);
+            }
+            
             // Load basic form data
             if (data.assessmentDate) assessmentDate.value = data.assessmentDate;
-            if (data.excursionDate) excursionDate.value = data.excursionDate;
-            if (data.location) locationInput.value = data.location;
-            if (data.excursionType) excursionType.value = data.excursionType;
+            if (data.activityDate) activityDate.value = data.activityDate;
             if (data.assessedBy) assessmentBy.value = data.assessedBy;
             if (data.supervisor) supervisor.value = data.supervisor;
             if (data.participants) participants.value = data.participants;
             if (data.emergencyContact) emergencyContact.value = data.emergencyContact;
             if (data.status) assessmentStatus.value = data.status;
-            if (data.weatherConditions) weatherConditions.value = data.weatherConditions;
             if (data.requiredEquipment) requiredEquipment.value = data.requiredEquipment;
             if (data.notes) assessmentNotes.value = data.notes;
+            
+            // Load mode-specific data
+            if (data.mode === 'campus') {
+                if (data.campusLocation) campusLocation.value = data.campusLocation;
+                if (data.campusActivityType) campusActivityType.value = data.campusActivityType;
+                if (data.roomNumber) roomNumber.value = data.roomNumber;
+            } else {
+                if (data.location) locationInput.value = data.location;
+                if (data.activityType) activityType.value = data.activityType;
+                if (data.weatherConditions) weatherConditions.value = data.weatherConditions;
+                if (data.transportDetails) transportDetails.value = data.transportDetails;
+            }
             
             // Load tasks
             if (data.tasks && Array.isArray(data.tasks)) {
@@ -1349,6 +1851,7 @@
             }
             
             // Update UI
+            updateRiskDisplay();
             updateStatusBadge();
         }
         
@@ -1357,12 +1860,12 @@
                 // Reset form
                 assessmentDate.value = todayStr;
                 
-                const excursion = new Date();
-                excursion.setDate(excursion.getDate() + 7);
-                excursionDate.value = excursion.toISOString().split('T')[0];
+                const activity = new Date();
+                activity.setDate(activity.getDate() + 7);
+                activityDate.value = activity.toISOString().split('T')[0];
                 
                 locationInput.value = '';
-                excursionType.value = '';
+                activityType.value = '';
                 assessmentBy.value = '';
                 supervisor.value = '';
                 participants.value = '';
@@ -1371,12 +1874,17 @@
                 weatherConditions.value = '';
                 requiredEquipment.value = '';
                 assessmentNotes.value = '';
+                transportDetails.value = '';
+                campusLocation.value = '';
+                campusActivityType.value = '';
+                roomNumber.value = '';
                 
                 // Clear tasks
                 tasks = [];
                 renderTasksTable();
                 
                 // Update UI
+                updateRiskDisplay();
                 updateStatusBadge();
                 
                 alert("Form cleared successfully!");
@@ -1408,8 +1916,8 @@
             
             // Add header
             doc.setFontSize(20);
-            doc.setTextColor(39, 174, 96); // Nature green
-            doc.text('FIELD EXCURSION RISK ASSESSMENT', 105, 20, { align: 'center' });
+            doc.setTextColor(isCampusMode ? 52 : 39, isCampusMode ? 152 : 174, isCampusMode ? 219 : 96); // Campus blue or field green
+            doc.text(isCampusMode ? 'CAMPUS ACTIVITY RISK ASSESSMENT' : 'FIELD EXCURSION RISK ASSESSMENT', 105, 20, { align: 'center' });
             
             doc.setFontSize(11);
             doc.setTextColor(100, 100, 100);
@@ -1418,21 +1926,25 @@
             // Add assessment details
             doc.setFontSize(12);
             doc.setTextColor(0, 0, 0);
-            doc.text('EXCURSION DETAILS', 20, 40);
+            doc.text('ACTIVITY DETAILS', 20, 40);
             doc.setLineWidth(0.5);
             doc.line(20, 42, 190, 42);
             
             doc.setFontSize(10);
             let yPos = 50;
             
-            // Excursion details table
+            // Activity details table
             const details = [
                 ['Assessment Date:', assessmentDate.value || 'Not specified'],
-                ['Excursion Date:', excursionDate.value || 'Not specified'],
-                ['Location:', locationInput.value || 'Not specified'],
-                ['Excursion Type:', excursionType.options[excursionType.selectedIndex].text || 'Not specified'],
+                ['Activity Date:', activityDate.value || 'Not specified'],
+                ['Activity Type:', isCampusMode ? 
+                    (campusActivityType.options[campusActivityType.selectedIndex].text || 'Not specified') :
+                    (activityType.options[activityType.selectedIndex].text || 'Not specified')],
+                ['Location:', isCampusMode ? 
+                    `Campus: ${campusLocation.options[campusLocation.selectedIndex].text || 'Not specified'} ${roomNumber.value ? `(${roomNumber.value})` : ''}` :
+                    (locationInput.value || 'Not specified')],
                 ['Assessed By:', assessmentBy.value || 'Not specified'],
-                ['Field Supervisor:', supervisor.value || 'Not specified'],
+                ['Activity Supervisor:', supervisor.value || 'Not specified'],
                 ['Emergency Contact:', emergencyContact.value || 'Not specified'],
                 ['Assessment Status:', assessmentStatus.options[assessmentStatus.selectedIndex].text || 'Not specified']
             ];
@@ -1441,12 +1953,24 @@
                 doc.setFont(undefined, 'bold');
                 doc.text(detail[0], 20, yPos);
                 doc.setFont(undefined, 'normal');
-                doc.text(detail[1], 70, yPos);
-                yPos += 7;
+                const detailText = doc.splitTextToSize(detail[1], 120);
+                doc.text(detailText, 70, yPos);
+                yPos += detailText.length * 5 + 2;
             });
             
-            // Participants and equipment
+            // Additional details based on mode
             yPos += 5;
+            if (!isCampusMode && weatherConditions.value) {
+                doc.setFont(undefined, 'bold');
+                doc.text('Weather Conditions:', 20, yPos);
+                doc.setFont(undefined, 'normal');
+                const weatherText = weatherConditions.value;
+                const splitWeather = doc.splitTextToSize(weatherText, 120);
+                doc.text(splitWeather, 70, yPos);
+                yPos += splitWeather.length * 5 + 5;
+            }
+            
+            // Participants and equipment
             doc.setFont(undefined, 'bold');
             doc.text('Participants:', 20, yPos);
             doc.setFont(undefined, 'normal');
@@ -1456,22 +1980,14 @@
             yPos += splitParticipants.length * 5 + 5;
             
             doc.setFont(undefined, 'bold');
-            doc.text('Required Equipment:', 20, yPos);
+            doc.text('Required Equipment & PPE:', 20, yPos);
             doc.setFont(undefined, 'normal');
             const equipmentText = requiredEquipment.value || 'Not specified';
             const splitEquipment = doc.splitTextToSize(equipmentText, 120);
             doc.text(splitEquipment, 70, yPos);
             yPos += splitEquipment.length * 5 + 10;
             
-            // Weather and notes
-            doc.setFont(undefined, 'bold');
-            doc.text('Weather Conditions:', 20, yPos);
-            doc.setFont(undefined, 'normal');
-            const weatherText = weatherConditions.value || 'Not specified';
-            const splitWeather = doc.splitTextToSize(weatherText, 120);
-            doc.text(splitWeather, 70, yPos);
-            yPos += splitWeather.length * 5 + 5;
-            
+            // Notes
             doc.setFont(undefined, 'bold');
             doc.text('Additional Notes:', 20, yPos);
             doc.setFont(undefined, 'normal');
@@ -1524,7 +2040,7 @@
                 
                 doc.setFontSize(12);
                 doc.setTextColor(0, 0, 0);
-                doc.text('FIELD ACTIVITIES & RISKS', 20, yPos);
+                doc.text('ACTIVITIES & RISKS', 20, yPos);
                 doc.setLineWidth(0.5);
                 doc.line(20, yPos + 2, 190, yPos + 2);
                 yPos += 10;
@@ -1567,13 +2083,15 @@
                         // Footer
                         doc.setFontSize(8);
                         doc.setTextColor(100, 100, 100);
-                        doc.text(`Field Excursion Risk Assessment - Generated on ${new Date().toLocaleDateString()}`, 105, 285, { align: 'center' });
+                        doc.text(`${isCampusMode ? 'Campus' : 'Field'} Risk Assessment - Generated on ${new Date().toLocaleDateString()}`, 105, 285, { align: 'center' });
+                        doc.text(`Compliant with AS/NZS ISO 31000:2018 & WHS Act 2011`, 105, 290, { align: 'center' });
                     }
                 });
             }
             
             // Save PDF
-            const fileName = `Field-Excursion-Risk-Assessment-${excursionDate.value || 'excursion'}.pdf`;
+            const modePrefix = isCampusMode ? 'Campus' : 'Field';
+            const fileName = `${modePrefix}-Risk-Assessment-${activityDate.value || 'activity'}.pdf`;
             doc.save(fileName);
             
             // Reset button
@@ -1588,7 +2106,7 @@
         
         // Load saved data on page load
         function loadSavedData() {
-            const savedData = localStorage.getItem('fieldExcursionRiskAssessment');
+            const savedData = localStorage.getItem('conservationRiskAssessment');
             if (savedData) {
                 try {
                     const data = JSON.parse(savedData);
@@ -1600,6 +2118,8 @@
         }
         
         // Event Listeners
+        likelihood.addEventListener('change', updateRiskDisplay);
+        severity.addEventListener('change', updateRiskDisplay);
         assessmentStatus.addEventListener('change', updateStatusBadge);
         
         addTaskBtn.addEventListener('click', addNewTask);
@@ -1609,10 +2129,14 @@
         exportBtn.addEventListener('click', exportAssessment);
         importFile.addEventListener('change', importAssessment);
         printBtn.addEventListener('click', printAssessment);
+        clearBtn.addEventListener('click', clearForm);
         
         saveTaskBtn.addEventListener('click', saveTask);
         cancelTaskBtn.addEventListener('click', closeModal);
         closeModalBtn.addEventListener('click', closeModal);
+        
+        fieldModeBtn.addEventListener('click', () => setCampusMode(false));
+        campusModeBtn.addEventListener('click', () => setCampusMode(true));
         
         // Close modal when clicking outside
         taskModal.addEventListener('click', (event) => {
@@ -1629,6 +2153,7 @@
         });
         
         // Initialize
+        updateRiskDisplay();
         updateStatusBadge();
         renderTasksTable();
         setupPredefinedActivities();
@@ -1637,6 +2162,9 @@
         // Make functions available globally for inline event handlers
         window.editTask = editTask;
         window.deleteTask = deleteTask;
+        
+        // Add debug function to check if toggle is working
+        console.log("Risk Assessment App initialized. Click 'Campus Activity' button to switch modes.");
     </script>
 </body>
 </html>

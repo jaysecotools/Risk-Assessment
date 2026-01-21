@@ -3,17 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Risk Assessment Form - Australian Standards</title>
+    <title>Field Excursion Risk Assessment - Australian Standards</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add jsPDF library for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         :root {
             --primary-color: #2c3e50;
-            --secondary-color: #3498db;
+            --secondary-color: #27ae60; /* Green for conservation/ecology theme */
             --danger-color: #e74c3c;
             --warning-color: #f39c12;
             --success-color: #27ae60;
             --light-color: #ecf0f1;
             --dark-color: #34495e;
+            --nature-green: #27ae60;
+            --earth-brown: #8B4513;
+            --sky-blue: #3498db;
             --border-radius: 6px;
             --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
@@ -35,7 +41,7 @@
         }
         
         header {
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(to right, var(--primary-color), var(--nature-green));
             color: white;
             padding: 20px;
             border-radius: var(--border-radius);
@@ -53,7 +59,7 @@
         
         h2 {
             color: var(--primary-color);
-            border-bottom: 2px solid var(--secondary-color);
+            border-bottom: 2px solid var(--nature-green);
             padding-bottom: 8px;
             margin: 25px 0 15px 0;
             font-size: 1.4rem;
@@ -111,7 +117,7 @@
         }
         
         input:focus, select:focus, textarea:focus {
-            border-color: var(--secondary-color);
+            border-color: var(--nature-green);
             outline: none;
         }
         
@@ -167,20 +173,22 @@
             padding: 15px 5px;
         }
         
-        .risk-score-1 { background-color: #d4edda; color: #155724; }
-        .risk-score-2 { background-color: #c3e6cb; color: #155724; }
-        .risk-score-3 { background-color: #f8d7da; color: #721c24; }
-        .risk-score-4 { background-color: #f5c6cb; color: #721c24; }
-        .risk-score-5 { background-color: #ffeaa7; color: #856404; }
-        .risk-score-6 { background-color: #fff3cd; color: #856404; }
-        .risk-score-8 { background-color: #ffeaa7; color: #856404; }
-        .risk-score-9 { background-color: #f8d7da; color: #721c24; }
-        .risk-score-10 { background-color: #f5c6cb; color: #721c24; }
-        .risk-score-12 { background-color: #f5c6cb; color: #721c24; }
-        .risk-score-15 { background-color: #f8d7da; color: #721c24; }
-        .risk-score-16 { background-color: #f5c6cb; color: #721c24; }
-        .risk-score-20 { background-color: #f5c6cb; color: #721c24; }
-        .risk-score-25 { background-color: #f8d7da; color: #721c24; }
+        .risk-score-1, .risk-score-2, .risk-score-3 { 
+            background-color: #d4edda !important; 
+            color: #155724 !important; 
+        }
+        .risk-score-4, .risk-score-5, .risk-score-6, .risk-score-8, .risk-score-9 { 
+            background-color: #fff3cd !important; 
+            color: #856404 !important; 
+        }
+        .risk-score-10, .risk-score-12, .risk-score-15, .risk-score-16 { 
+            background-color: #f8d7da !important; 
+            color: #721c24 !important; 
+        }
+        .risk-score-20, .risk-score-25 { 
+            background-color: #f5c6cb !important; 
+            color: #721c24 !important; 
+        }
         
         .risk-legend {
             display: flex;
@@ -250,12 +258,12 @@
         }
         
         .btn-primary {
-            background-color: var(--secondary-color);
+            background-color: var(--nature-green);
             color: white;
         }
         
         .btn-primary:hover {
-            background-color: #2980b9;
+            background-color: #219653;
         }
         
         .btn-success {
@@ -285,6 +293,15 @@
             background-color: #d68910;
         }
         
+        .btn-info {
+            background-color: var(--sky-blue);
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background-color: #2980b9;
+        }
+        
         .button-group {
             display: flex;
             gap: 12px;
@@ -300,7 +317,7 @@
             padding: 15px;
             border-radius: var(--border-radius);
             margin-top: 15px;
-            border-left: 5px solid var(--secondary-color);
+            border-left: 5px solid var(--nature-green);
         }
         
         .risk-level {
@@ -376,11 +393,13 @@
             background-color: white;
             padding: 25px;
             border-radius: var(--border-radius);
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             transform: translateY(-20px);
             transition: transform 0.3s;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         
         .modal.active .modal-content {
@@ -432,30 +451,149 @@
             color: var(--danger-color);
         }
         
-        /* Fix matrix cell colors to match actual risk levels */
-        .risk-score-1, .risk-score-2, .risk-score-3 { 
-            background-color: #d4edda !important; 
-            color: #155724 !important; 
+        .excursion-tag {
+            display: inline-block;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-right: 8px;
+            margin-bottom: 8px;
         }
-        .risk-score-4, .risk-score-5, .risk-score-6, .risk-score-8, .risk-score-9 { 
-            background-color: #fff3cd !important; 
-            color: #856404 !important; 
+        
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
         }
-        .risk-score-10, .risk-score-12, .risk-score-15, .risk-score-16 { 
-            background-color: #f8d7da !important; 
-            color: #721c24 !important; 
+        
+        .predefined-activity {
+            background-color: #f0f7ff;
+            padding: 12px;
+            border-radius: var(--border-radius);
+            margin-bottom: 10px;
+            cursor: pointer;
+            border-left: 4px solid var(--nature-green);
+            transition: all 0.2s;
         }
-        .risk-score-20, .risk-score-25 { 
-            background-color: #f5c6cb !important; 
-            color: #721c24 !important; 
+        
+        .predefined-activity:hover {
+            background-color: #e3f2fd;
+            transform: translateY(-2px);
+        }
+        
+        .activity-title {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .activity-desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .summary-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+            border-left: 4px solid var(--nature-green);
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .summary-label {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .summary-value {
+            color: var(--primary-color);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,.1);
+            border-radius: 50%;
+            border-top-color: var(--nature-green);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .risk-category {
+            padding: 4px 10px;
+            border-radius: var(--border-radius);
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .environmental-risk { background-color: #e8f5e9; color: #2e7d32; }
+        .safety-risk { background-color: #fff3cd; color: #856404; }
+        .health-risk { background-color: #f8d7da; color: #721c24; }
+        .logistical-risk { background-color: #e3f2fd; color: #1565c0; }
+        .weather-risk { background-color: #e0f7fa; color: #006064; }
+        
+        .print-only {
+            display: none;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+                background-color: white;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            .print-only {
+                display: block !important;
+            }
+            
+            .section {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+            
+            .container {
+                display: block;
+            }
+            
+            .button-group, .task-controls, footer {
+                display: none;
+            }
+            
+            header {
+                box-shadow: none;
+                margin-bottom: 15px;
+            }
         }
     </style>
 </head>
 <body>
     <header>
         <div>
-            <h1><i class="fas fa-clipboard-check"></i> Risk Assessment Form</h1>
-            <p class="subtitle">Compliant with Australian Standards AS/NZS ISO 31000:2018</p>
+            <h1><i class="fas fa-leaf"></i> Field Excursion Risk Assessment</h1>
+            <p class="subtitle">Conservation & Ecosystem Management - Compliant with Australian Standards</p>
         </div>
         <div id="statusBadge" class="status-badge status-draft">DRAFT</div>
     </header>
@@ -463,7 +601,7 @@
     <div class="container">
         <div class="left-column">
             <div class="section">
-                <h2><i class="fas fa-info-circle"></i> Assessment Details</h2>
+                <h2><i class="fas fa-info-circle"></i> Excursion Details</h2>
                 
                 <div class="form-row">
                     <div class="form-group">
@@ -472,24 +610,51 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="reviewDate" class="required">Review Date</label>
-                        <input type="date" id="reviewDate" value="">
+                        <label for="excursionDate" class="required">Excursion Date</label>
+                        <input type="date" id="excursionDate" value="">
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="location" class="required">Location / Site</label>
-                    <input type="text" id="location" placeholder="Enter site location">
+                    <label for="location" class="required">Field Location / Site</label>
+                    <input type="text" id="location" placeholder="Enter field site location">
                 </div>
                 
                 <div class="form-group">
-                    <label for="assessmentBy" class="required">Assessed By</label>
-                    <input type="text" id="assessmentBy" placeholder="Name of assessor">
+                    <label for="excursionType">Excursion Type</label>
+                    <select id="excursionType">
+                        <option value="">Select type...</option>
+                        <option value="field_survey">Field Survey</option>
+                        <option value="species_monitoring">Species Monitoring</option>
+                        <option value="habitat_assessment">Habitat Assessment</option>
+                        <option value="water_quality">Water Quality Testing</option>
+                        <option value="vegetation_survey">Vegetation Survey</option>
+                        <option value="soil_sampling">Soil Sampling</option>
+                        <option value="restoration">Restoration Activity</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="assessmentBy" class="required">Assessed By</label>
+                        <input type="text" id="assessmentBy" placeholder="Name of assessor">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="supervisor" class="required">Field Supervisor</label>
+                        <input type="text" id="supervisor" placeholder="Field supervisor name">
+                    </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="projectName">Project / Activity Name</label>
-                    <input type="text" id="projectName" placeholder="Enter project or activity name">
+                    <label for="participants">Participants (Students/Staff)</label>
+                    <textarea id="participants" rows="2" placeholder="List participants or describe group"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="emergencyContact">Emergency Contact</label>
+                    <input type="text" id="emergencyContact" placeholder="Emergency contact name & phone">
                 </div>
                 
                 <div class="form-group">
@@ -503,7 +668,39 @@
             </div>
             
             <div class="section">
-                <h2><i class="fas fa-tasks"></i> Risk Assessment Matrix</h2>
+                <h2><i class="fas fa-tasks"></i> Predefined Field Activities</h2>
+                <p class="notes">Click to add common conservation field activities to your assessment:</p>
+                
+                <div id="predefinedActivities">
+                    <div class="predefined-activity" data-activity="Vegetation Survey">
+                        <div class="activity-title">Vegetation Survey</div>
+                        <div class="activity-desc">Plant identification, quadrat sampling, transect surveys</div>
+                    </div>
+                    
+                    <div class="predefined-activity" data-activity="Fauna Monitoring">
+                        <div class="activity-title">Fauna Monitoring</div>
+                        <div class="activity-desc">Animal tracking, camera traps, bird surveys, insect collection</div>
+                    </div>
+                    
+                    <div class="predefined-activity" data-activity="Soil & Water Sampling">
+                        <div class="activity-title">Soil & Water Sampling</div>
+                        <div class="activity-desc">Soil coring, water quality testing, pH measurement</div>
+                    </div>
+                    
+                    <div class="predefined-activity" data-activity="Habitat Assessment">
+                        <div class="activity-title">Habitat Assessment</div>
+                        <div class="activity-desc">Habitat quality scoring, vegetation structure assessment</div>
+                    </div>
+                    
+                    <div class="predefined-activity" data-activity="Field Equipment Use">
+                        <div class="activity-title">Field Equipment Use</div>
+                        <div class="activity-desc">GPS, compass, clinometer, surveying equipment</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2><i class="fas fa-exclamation-triangle"></i> Risk Assessment Matrix</h2>
                 <p>This risk matrix follows Australian Standards for risk assessment. Select likelihood and severity to calculate risk score.</p>
                 
                 <div class="risk-matrix">
@@ -568,53 +765,17 @@
                         <span>Extreme Risk (17-25)</span>
                     </div>
                 </div>
-                
-                <h3>Risk Score Calculator</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="likelihood">Likelihood</label>
-                        <select id="likelihood">
-                            <option value="1">Rare (1)</option>
-                            <option value="2">Unlikely (2)</option>
-                            <option value="3" selected>Possible (3)</option>
-                            <option value="4">Likely (4)</option>
-                            <option value="5">Almost Certain (5)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="severity">Severity</label>
-                        <select id="severity">
-                            <option value="1">Insignificant (1)</option>
-                            <option value="2">Minor (2)</option>
-                            <option value="3" selected>Moderate (3)</option>
-                            <option value="4">Major (4)</option>
-                            <option value="5">Catastrophic (5)</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="risk-result">
-                    <div>
-                        <strong>Calculated Risk Score:</strong>
-                        <div id="calculatedScore" style="font-size: 1.5rem; margin-top: 5px;">9</div>
-                    </div>
-                    <div>
-                        <strong>Risk Level:</strong>
-                        <div id="riskLevel" class="risk-level medium-risk">Medium Risk</div>
-                    </div>
-                </div>
             </div>
         </div>
         
         <div class="right-column">
             <div class="section">
-                <h2><i class="fas fa-table"></i> Tasks & Activities</h2>
-                <p class="notes">Add tasks or activities to be assessed. For each task, identify hazards and evaluate risks.</p>
+                <h2><i class="fas fa-table"></i> Field Activities & Risks</h2>
+                <p class="notes">Add field activities with associated risks. Use risk categories for better organization.</p>
                 
                 <div class="task-controls">
                     <button id="addTaskBtn" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Add Task
+                        <i class="fas fa-plus"></i> Add Activity
                     </button>
                     <button id="clearTasksBtn" class="btn btn-warning">
                         <i class="fas fa-trash-alt"></i> Clear All
@@ -624,11 +785,12 @@
                 <table id="tasksTable">
                     <thead>
                         <tr>
-                            <th width="25%">Task / Activity</th>
-                            <th width="25%">Hazard</th>
-                            <th width="15%">Risk Score</th>
+                            <th width="20%">Activity</th>
+                            <th width="20%">Hazard / Risk</th>
+                            <th width="10%">Category</th>
+                            <th width="10%">Risk Score</th>
                             <th width="25%">Controls</th>
-                            <th width="10%">Actions</th>
+                            <th width="15%">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="tasksTableBody">
@@ -638,48 +800,83 @@
                 
                 <div id="noTasksMessage" class="form-group" style="text-align: center; padding: 20px; color: #666;">
                     <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                    <p>No tasks added yet. Click "Add Task" to begin your risk assessment.</p>
+                    <p>No activities added yet. Click "Add Activity" or select predefined activities above.</p>
+                </div>
+                
+                <div class="summary-box">
+                    <h3>Risk Summary</h3>
+                    <div class="summary-item">
+                        <span class="summary-label">Total Activities:</span>
+                        <span class="summary-value" id="totalActivities">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Highest Risk:</span>
+                        <span class="summary-value" id="highestRisk">None</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Activities Needing Review:</span>
+                        <span class="summary-value" id="needsReview">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Overall Assessment:</span>
+                        <span class="summary-value" id="overallAssessment">Not assessed</span>
+                    </div>
                 </div>
             </div>
             
             <div class="section">
-                <h2><i class="fas fa-file-export"></i> Save & Export</h2>
-                <p class="notes">Save your assessment locally or export as a JSON file for sharing and compliance records.</p>
+                <h2><i class="fas fa-file-export"></i> Export & Compliance</h2>
+                <p class="notes">Generate professional reports for field excursions and compliance documentation.</p>
                 
                 <div class="button-group">
                     <button id="saveBtn" class="btn btn-success">
                         <i class="fas fa-save"></i> Save Assessment
                     </button>
                     
+                    <button id="exportPdfBtn" class="btn btn-danger">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                    
                     <button id="exportBtn" class="btn btn-primary">
-                        <i class="fas fa-download"></i> Export as JSON
+                        <i class="fas fa-download"></i> Export JSON
                     </button>
                     
                     <input type="file" id="importFile" class="file-input" accept=".json">
                     <label for="importFile" class="file-label btn btn-warning">
-                        <i class="fas fa-upload"></i> Load Assessment
+                        <i class="fas fa-upload"></i> Load
                     </label>
                     
-                    <button id="clearBtn" class="btn btn-danger">
-                        <i class="fas fa-broom"></i> Clear Form
+                    <button id="printBtn" class="btn btn-info">
+                        <i class="fas fa-print"></i> Print
                     </button>
                 </div>
                 
                 <div class="form-group" style="margin-top: 20px;">
-                    <label for="assessmentNotes">Additional Notes / Comments</label>
-                    <textarea id="assessmentNotes" rows="4" placeholder="Enter any additional notes or comments about this risk assessment..."></textarea>
+                    <label for="weatherConditions">Weather Conditions / Forecast</label>
+                    <textarea id="weatherConditions" rows="2" placeholder="Expected weather, temperature, UV index, etc."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="requiredEquipment">Required Equipment</label>
+                    <textarea id="requiredEquipment" rows="3" placeholder="List required field equipment, PPE, first aid, communication, etc."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="assessmentNotes">Additional Notes / Special Instructions</label>
+                    <textarea id="assessmentNotes" rows="4" placeholder="Enter any additional notes, special considerations, or emergency procedures..."></textarea>
                 </div>
             </div>
             
             <div class="section">
-                <h2><i class="fas fa-certificate"></i> Australian Standards Compliance</h2>
-                <p>This risk assessment form is designed to comply with:</p>
+                <h2><i class="fas fa-certificate"></i> Standards & Compliance</h2>
+                <p>This field excursion risk assessment form complies with:</p>
                 <ul style="padding-left: 20px; margin-top: 10px;">
                     <li><strong>AS/NZS ISO 31000:2018</strong> - Risk management guidelines</li>
-                    <li><strong>AS/NZS 4801:2001</strong> - Occupational health and safety management systems</li>
-                    <li><strong>AS/NZS 4360:2004</strong> - Risk management (superseded but still referenced)</li>
+                    <li><strong>AS/NZS 4801:2001</strong> - Occupational health and safety management</li>
+                    <li><strong>Education Department Excursion Guidelines</strong> - Field trip requirements</li>
+                    <li><strong>Work Health and Safety Act 2011</strong> - Duty of care obligations</li>
                 </ul>
-                <p class="notes" style="margin-top: 10px;">This tool follows the principles of risk identification, analysis, evaluation, and treatment as outlined in Australian standards.</p>
+                <p class="notes" style="margin-top: 10px;">For conservation field work: Always conduct a site reconnaissance, check weather forecasts, ensure appropriate PPE, and have emergency communication plans.</p>
             </div>
         </div>
     </div>
@@ -687,18 +884,29 @@
     <div id="taskModal" class="modal">
         <div class="modal-content">
             <button class="close-modal" id="closeModalBtn">&times;</button>
-            <h3 id="modalTitle">Add New Task</h3>
+            <h3 id="modalTitle">Add Field Activity</h3>
             <div class="form-group">
-                <label for="taskName" class="required">Task / Activity</label>
-                <input type="text" id="taskName" placeholder="Describe the task or activity">
+                <label for="taskName" class="required">Field Activity</label>
+                <input type="text" id="taskName" placeholder="Describe the field activity">
             </div>
             
             <div class="form-group">
-                <label for="hazard" class="required">Hazard Identification</label>
-                <textarea id="hazard" rows="3" placeholder="Identify potential hazards associated with this task"></textarea>
+                <label for="hazard" class="required">Hazard / Risk Identification</label>
+                <textarea id="hazard" rows="3" placeholder="Identify potential hazards associated with this activity"></textarea>
             </div>
             
             <div class="form-row">
+                <div class="form-group">
+                    <label for="riskCategory">Risk Category</label>
+                    <select id="riskCategory">
+                        <option value="environmental">Environmental</option>
+                        <option value="safety">Safety</option>
+                        <option value="health">Health</option>
+                        <option value="logistical">Logistical</option>
+                        <option value="weather">Weather</option>
+                    </select>
+                </div>
+                
                 <div class="form-group">
                     <label for="taskLikelihood" class="required">Likelihood</label>
                     <select id="taskLikelihood">
@@ -709,7 +917,9 @@
                         <option value="5">Almost Certain (5)</option>
                     </select>
                 </div>
-                
+            </div>
+            
+            <div class="form-row">
                 <div class="form-group">
                     <label for="taskSeverity" class="required">Severity</label>
                     <select id="taskSeverity">
@@ -720,70 +930,86 @@
                         <option value="5">Catastrophic (5)</option>
                     </select>
                 </div>
+                
+                <div class="form-group">
+                    <label for="personResponsible">Person Responsible</label>
+                    <input type="text" id="personResponsible" placeholder="Who will manage this risk?">
+                </div>
             </div>
             
             <div class="form-group">
                 <label for="controls" class="required">Control Measures</label>
-                <textarea id="controls" rows="3" placeholder="Describe control measures to mitigate the risk"></textarea>
+                <textarea id="controls" rows="3" placeholder="Describe control measures to mitigate the risk (PPE, procedures, training, etc.)"></textarea>
             </div>
             
             <div class="modal-buttons">
                 <button id="cancelTaskBtn" class="btn btn-warning">Cancel</button>
-                <button id="saveTaskBtn" class="btn btn-success">Save Task</button>
+                <button id="saveTaskBtn" class="btn btn-success">Save Activity</button>
             </div>
         </div>
     </div>
     
     <footer>
-        <p>Risk Assessment Form v1.0 | Compliant with Australian Standards | For official use only</p>
-        <p>© 2023 Workplace Safety Management System</p>
+        <p>Field Excursion Risk Assessment v2.0 | Conservation & Ecosystem Management | Compliant with Australian Standards</p>
+        <p>© 2023 University Conservation Program | For official field excursion use only</p>
     </footer>
 
     <script>
         // DOM Elements
         const assessmentDate = document.getElementById('assessmentDate');
-        const reviewDate = document.getElementById('reviewDate');
+        const excursionDate = document.getElementById('excursionDate');
         const locationInput = document.getElementById('location');
+        const excursionType = document.getElementById('excursionType');
         const assessmentBy = document.getElementById('assessmentBy');
-        const projectName = document.getElementById('projectName');
+        const supervisor = document.getElementById('supervisor');
+        const participants = document.getElementById('participants');
+        const emergencyContact = document.getElementById('emergencyContact');
         const assessmentStatus = document.getElementById('assessmentStatus');
-        const likelihood = document.getElementById('likelihood');
-        const severity = document.getElementById('severity');
-        const calculatedScore = document.getElementById('calculatedScore');
-        const riskLevel = document.getElementById('riskLevel');
         const assessmentNotes = document.getElementById('assessmentNotes');
+        const weatherConditions = document.getElementById('weatherConditions');
+        const requiredEquipment = document.getElementById('requiredEquipment');
         const statusBadge = document.getElementById('statusBadge');
         
         const tasksTableBody = document.getElementById('tasksTableBody');
         const noTasksMessage = document.getElementById('noTasksMessage');
+        const predefinedActivities = document.getElementById('predefinedActivities');
         
         const addTaskBtn = document.getElementById('addTaskBtn');
         const clearTasksBtn = document.getElementById('clearTasksBtn');
         const saveBtn = document.getElementById('saveBtn');
+        const exportPdfBtn = document.getElementById('exportPdfBtn');
         const exportBtn = document.getElementById('exportBtn');
         const importFile = document.getElementById('importFile');
-        const clearBtn = document.getElementById('clearBtn');
+        const printBtn = document.getElementById('printBtn');
         
         const taskModal = document.getElementById('taskModal');
         const modalTitle = document.getElementById('modalTitle');
         const taskName = document.getElementById('taskName');
         const hazardInput = document.getElementById('hazard');
+        const riskCategory = document.getElementById('riskCategory');
         const taskLikelihood = document.getElementById('taskLikelihood');
         const taskSeverity = document.getElementById('taskSeverity');
+        const personResponsible = document.getElementById('personResponsible');
         const controls = document.getElementById('controls');
         const saveTaskBtn = document.getElementById('saveTaskBtn');
         const cancelTaskBtn = document.getElementById('cancelTaskBtn');
         const closeModalBtn = document.getElementById('closeModalBtn');
+        
+        // Summary elements
+        const totalActivities = document.getElementById('totalActivities');
+        const highestRisk = document.getElementById('highestRisk');
+        const needsReview = document.getElementById('needsReview');
+        const overallAssessment = document.getElementById('overallAssessment');
         
         // Initialize with current date
         const today = new Date();
         const todayStr = today.toISOString().split('T')[0];
         assessmentDate.value = todayStr;
         
-        // Set review date to 30 days from now
-        const review = new Date();
-        review.setDate(review.getDate() + 30);
-        reviewDate.value = review.toISOString().split('T')[0];
+        // Set excursion date to 7 days from now
+        const excursion = new Date();
+        excursion.setDate(excursion.getDate() + 7);
+        excursionDate.value = excursion.toISOString().split('T')[0];
         
         // Tasks data
         let tasks = [];
@@ -795,20 +1021,76 @@
         }
         
         function getRiskLevel(score) {
-            // Fixed risk level calculation based on the matrix
             if (score <= 3) return { level: "Low Risk", className: "low-risk" };
             if (score <= 9) return { level: "Medium Risk", className: "medium-risk" };
             if (score <= 16) return { level: "High Risk", className: "high-risk" };
             return { level: "Extreme Risk", className: "extreme-risk" };
         }
         
-        function updateRiskDisplay() {
-            const score = calculateRiskScore(likelihood.value, severity.value);
-            const risk = getRiskLevel(score);
+        function getRiskCategoryClass(category) {
+            switch(category) {
+                case 'environmental': return 'environmental-risk';
+                case 'safety': return 'safety-risk';
+                case 'health': return 'health-risk';
+                case 'logistical': return 'logistical-risk';
+                case 'weather': return 'weather-risk';
+                default: return 'environmental-risk';
+            }
+        }
+        
+        function getRiskCategoryName(category) {
+            switch(category) {
+                case 'environmental': return 'Environmental';
+                case 'safety': return 'Safety';
+                case 'health': return 'Health';
+                case 'logistical': return 'Logistical';
+                case 'weather': return 'Weather';
+                default: return 'Environmental';
+            }
+        }
+        
+        // Update risk summary
+        function updateRiskSummary() {
+            totalActivities.textContent = tasks.length;
             
-            calculatedScore.textContent = score;
-            riskLevel.textContent = risk.level;
-            riskLevel.className = `risk-level ${risk.className}`;
+            if (tasks.length === 0) {
+                highestRisk.textContent = 'None';
+                needsReview.textContent = '0';
+                overallAssessment.textContent = 'Not assessed';
+                return;
+            }
+            
+            // Find highest risk
+            let maxScore = 0;
+            let highRiskCount = 0;
+            let extremeRiskCount = 0;
+            
+            tasks.forEach(task => {
+                const score = calculateRiskScore(task.likelihood, task.severity);
+                if (score > maxScore) maxScore = score;
+                
+                const risk = getRiskLevel(score);
+                if (risk.level === "High Risk") highRiskCount++;
+                if (risk.level === "Extreme Risk") extremeRiskCount++;
+            });
+            
+            const highestRiskLevel = getRiskLevel(maxScore);
+            highestRisk.textContent = `${maxScore} (${highestRiskLevel.level})`;
+            
+            // Activities needing review (High or Extreme risk)
+            needsReview.textContent = highRiskCount + extremeRiskCount;
+            
+            // Overall assessment
+            if (extremeRiskCount > 0) {
+                overallAssessment.textContent = 'NOT APPROVED - Extreme risks present';
+                overallAssessment.style.color = '#721c24';
+            } else if (highRiskCount > 0) {
+                overallAssessment.textContent = 'REVIEW REQUIRED - High risks present';
+                overallAssessment.style.color = '#856404';
+            } else {
+                overallAssessment.textContent = 'APPROVED - Acceptable risk level';
+                overallAssessment.style.color = '#155724';
+            }
         }
         
         // Update status badge
@@ -821,22 +1103,24 @@
         // Modal functions
         function openModal() {
             taskModal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Prevent scrolling
+            document.body.style.overflow = 'hidden';
         }
         
         function closeModal() {
             taskModal.classList.remove('active');
-            document.body.style.overflow = 'auto'; // Re-enable scrolling
+            document.body.style.overflow = 'auto';
             resetModalForm();
         }
         
         function resetModalForm() {
             editingTaskIndex = -1;
-            modalTitle.textContent = "Add New Task";
+            modalTitle.textContent = "Add Field Activity";
             taskName.value = '';
             hazardInput.value = '';
+            riskCategory.value = 'environmental';
             taskLikelihood.value = '3';
             taskSeverity.value = '3';
+            personResponsible.value = '';
             controls.value = '';
         }
         
@@ -845,6 +1129,7 @@
             if (tasks.length === 0) {
                 tasksTableBody.innerHTML = '';
                 noTasksMessage.classList.remove('hidden');
+                updateRiskSummary();
                 return;
             }
             
@@ -854,13 +1139,16 @@
             tasks.forEach((task, index) => {
                 const riskScore = calculateRiskScore(task.likelihood, task.severity);
                 const risk = getRiskLevel(riskScore);
+                const categoryClass = getRiskCategoryClass(task.category);
+                const categoryName = getRiskCategoryName(task.category);
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${task.name}</td>
                     <td>${task.hazard}</td>
+                    <td><span class="risk-category ${categoryClass}">${categoryName}</span></td>
                     <td><span class="risk-level ${risk.className}" style="padding: 4px 8px; font-size: 0.9rem;">${riskScore} (${risk.level})</span></td>
-                    <td>${task.controls}</td>
+                    <td>${task.controls}<br><small>${task.personResponsible ? `Responsible: ${task.personResponsible}` : ''}</small></td>
                     <td>
                         <button class="btn btn-primary" onclick="editTask(${index})" style="padding: 5px 8px; font-size: 0.8rem;">
                             <i class="fas fa-edit"></i>
@@ -872,6 +1160,8 @@
                 `;
                 tasksTableBody.appendChild(row);
             });
+            
+            updateRiskSummary();
         }
         
         function addNewTask() {
@@ -883,18 +1173,20 @@
             editingTaskIndex = index;
             const task = tasks[index];
             
-            modalTitle.textContent = "Edit Task";
+            modalTitle.textContent = "Edit Activity";
             taskName.value = task.name;
             hazardInput.value = task.hazard;
+            riskCategory.value = task.category || 'environmental';
             taskLikelihood.value = task.likelihood;
             taskSeverity.value = task.severity;
+            personResponsible.value = task.personResponsible || '';
             controls.value = task.controls;
             
             openModal();
         }
         
         function deleteTask(index) {
-            if (confirm("Are you sure you want to delete this task?")) {
+            if (confirm("Are you sure you want to delete this activity?")) {
                 tasks.splice(index, 1);
                 renderTasksTable();
             }
@@ -903,7 +1195,7 @@
         function saveTask() {
             // Validate form
             if (!taskName.value.trim()) {
-                alert("Task name is required");
+                alert("Activity name is required");
                 return;
             }
             
@@ -920,8 +1212,10 @@
             const task = {
                 name: taskName.value,
                 hazard: hazardInput.value,
+                category: riskCategory.value,
                 likelihood: taskLikelihood.value,
                 severity: taskSeverity.value,
+                personResponsible: personResponsible.value,
                 controls: controls.value
             };
             
@@ -935,20 +1229,59 @@
             closeModal();
         }
         
+        // Predefined activities
+        function setupPredefinedActivities() {
+            const activityElements = predefinedActivities.querySelectorAll('.predefined-activity');
+            activityElements.forEach(element => {
+                element.addEventListener('click', function() {
+                    const activityName = this.getAttribute('data-activity');
+                    
+                    // Set the modal with predefined activity
+                    resetModalForm();
+                    taskName.value = activityName;
+                    
+                    // Set appropriate hazards based on activity
+                    if (activityName === 'Vegetation Survey') {
+                        hazardInput.value = 'Contact with toxic plants, allergic reactions, cuts from sharp vegetation, sun exposure, dehydration';
+                        controls.value = 'Plant identification training, wear long sleeves/pants, use gloves, apply sunscreen, carry sufficient water, first aid kit available';
+                    } else if (activityName === 'Fauna Monitoring') {
+                        hazardInput.value = 'Animal bites/stings, zoonotic diseases, falls while setting up equipment, getting lost in remote areas';
+                        controls.value = 'Animal handling training, appropriate PPE (gloves, boots), carry epipen if allergic, use GPS and maps, buddy system';
+                    } else if (activityName === 'Soil & Water Sampling') {
+                        hazardInput.value = 'Contact with contaminated soil/water, slips near water bodies, equipment handling injuries, chemical exposure';
+                        controls.value = 'Use appropriate sampling equipment, wear gloves and protective clothing, water safety briefing, chemical handling procedures';
+                    } else if (activityName === 'Habitat Assessment') {
+                        hazardInput.value = 'Uneven terrain, trips and falls, remote location risks, weather exposure';
+                        controls.value = 'Site reconnaissance, appropriate footwear, weather-appropriate clothing, communication devices, first aid training';
+                    } else if (activityName === 'Field Equipment Use') {
+                        hazardInput.value = 'Equipment misuse, trip hazards from cables/tripods, eye injuries, repetitive strain';
+                        controls.value = 'Equipment training, proper setup procedures, regular breaks, PPE (safety glasses), equipment maintenance checks';
+                    }
+                    
+                    personResponsible.value = supervisor.value || assessmentBy.value;
+                    openModal();
+                });
+            });
+        }
+        
         // Data management functions
         function collectFormData() {
             const data = {
                 assessmentDate: assessmentDate.value,
-                reviewDate: reviewDate.value,
+                excursionDate: excursionDate.value,
                 location: locationInput.value,
+                excursionType: excursionType.value,
                 assessedBy: assessmentBy.value,
-                projectName: projectName.value,
+                supervisor: supervisor.value,
+                participants: participants.value,
+                emergencyContact: emergencyContact.value,
                 status: assessmentStatus.value,
-                likelihood: likelihood.value,
-                severity: severity.value,
+                weatherConditions: weatherConditions.value,
+                requiredEquipment: requiredEquipment.value,
                 notes: assessmentNotes.value,
                 tasks: tasks,
-                lastSaved: new Date().toISOString()
+                lastSaved: new Date().toISOString(),
+                version: '2.0'
             };
             
             return data;
@@ -956,7 +1289,7 @@
         
         function saveAssessment() {
             const data = collectFormData();
-            localStorage.setItem('riskAssessmentData', JSON.stringify(data));
+            localStorage.setItem('fieldExcursionRiskAssessment', JSON.stringify(data));
             alert("Assessment saved to browser storage successfully!");
         }
         
@@ -965,7 +1298,7 @@
             const dataStr = JSON.stringify(data, null, 2);
             const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
             
-            const exportFileDefaultName = `risk-assessment-${new Date().toISOString().split('T')[0]}.json`;
+            const exportFileDefaultName = `field-excursion-risk-assessment-${new Date().toISOString().split('T')[0]}.json`;
             
             const linkElement = document.createElement('a');
             linkElement.setAttribute('href', dataUri);
@@ -997,13 +1330,16 @@
         function loadFormData(data) {
             // Load basic form data
             if (data.assessmentDate) assessmentDate.value = data.assessmentDate;
-            if (data.reviewDate) reviewDate.value = data.reviewDate;
+            if (data.excursionDate) excursionDate.value = data.excursionDate;
             if (data.location) locationInput.value = data.location;
+            if (data.excursionType) excursionType.value = data.excursionType;
             if (data.assessedBy) assessmentBy.value = data.assessedBy;
-            if (data.projectName) projectName.value = data.projectName;
+            if (data.supervisor) supervisor.value = data.supervisor;
+            if (data.participants) participants.value = data.participants;
+            if (data.emergencyContact) emergencyContact.value = data.emergencyContact;
             if (data.status) assessmentStatus.value = data.status;
-            if (data.likelihood) likelihood.value = data.likelihood;
-            if (data.severity) severity.value = data.severity;
+            if (data.weatherConditions) weatherConditions.value = data.weatherConditions;
+            if (data.requiredEquipment) requiredEquipment.value = data.requiredEquipment;
             if (data.notes) assessmentNotes.value = data.notes;
             
             // Load tasks
@@ -1013,7 +1349,6 @@
             }
             
             // Update UI
-            updateRiskDisplay();
             updateStatusBadge();
         }
         
@@ -1022,16 +1357,19 @@
                 // Reset form
                 assessmentDate.value = todayStr;
                 
-                const review = new Date();
-                review.setDate(review.getDate() + 30);
-                reviewDate.value = review.toISOString().split('T')[0];
+                const excursion = new Date();
+                excursion.setDate(excursion.getDate() + 7);
+                excursionDate.value = excursion.toISOString().split('T')[0];
                 
                 locationInput.value = '';
+                excursionType.value = '';
                 assessmentBy.value = '';
-                projectName.value = '';
+                supervisor.value = '';
+                participants.value = '';
+                emergencyContact.value = '';
                 assessmentStatus.value = 'draft';
-                likelihood.value = '3';
-                severity.value = '3';
+                weatherConditions.value = '';
+                requiredEquipment.value = '';
                 assessmentNotes.value = '';
                 
                 // Clear tasks
@@ -1039,7 +1377,6 @@
                 renderTasksTable();
                 
                 // Update UI
-                updateRiskDisplay();
                 updateStatusBadge();
                 
                 alert("Form cleared successfully!");
@@ -1048,20 +1385,210 @@
         
         function clearAllTasks() {
             if (tasks.length === 0) {
-                alert("There are no tasks to clear.");
+                alert("There are no activities to clear.");
                 return;
             }
             
-            if (confirm("Are you sure you want to clear all tasks? This action cannot be undone.")) {
+            if (confirm("Are you sure you want to clear all activities? This action cannot be undone.")) {
                 tasks = [];
                 renderTasksTable();
-                alert("All tasks cleared!");
+                alert("All activities cleared!");
             }
+        }
+        
+        // PDF Export Function
+        function exportToPDF() {
+            // Show loading indicator
+            exportPdfBtn.innerHTML = '<div class="loading"></div> Generating PDF...';
+            exportPdfBtn.disabled = true;
+            
+            // Use jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            
+            // Add header
+            doc.setFontSize(20);
+            doc.setTextColor(39, 174, 96); // Nature green
+            doc.text('FIELD EXCURSION RISK ASSESSMENT', 105, 20, { align: 'center' });
+            
+            doc.setFontSize(11);
+            doc.setTextColor(100, 100, 100);
+            doc.text('Conservation & Ecosystem Management - Australian Standards Compliance', 105, 27, { align: 'center' });
+            
+            // Add assessment details
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text('EXCURSION DETAILS', 20, 40);
+            doc.setLineWidth(0.5);
+            doc.line(20, 42, 190, 42);
+            
+            doc.setFontSize(10);
+            let yPos = 50;
+            
+            // Excursion details table
+            const details = [
+                ['Assessment Date:', assessmentDate.value || 'Not specified'],
+                ['Excursion Date:', excursionDate.value || 'Not specified'],
+                ['Location:', locationInput.value || 'Not specified'],
+                ['Excursion Type:', excursionType.options[excursionType.selectedIndex].text || 'Not specified'],
+                ['Assessed By:', assessmentBy.value || 'Not specified'],
+                ['Field Supervisor:', supervisor.value || 'Not specified'],
+                ['Emergency Contact:', emergencyContact.value || 'Not specified'],
+                ['Assessment Status:', assessmentStatus.options[assessmentStatus.selectedIndex].text || 'Not specified']
+            ];
+            
+            details.forEach(detail => {
+                doc.setFont(undefined, 'bold');
+                doc.text(detail[0], 20, yPos);
+                doc.setFont(undefined, 'normal');
+                doc.text(detail[1], 70, yPos);
+                yPos += 7;
+            });
+            
+            // Participants and equipment
+            yPos += 5;
+            doc.setFont(undefined, 'bold');
+            doc.text('Participants:', 20, yPos);
+            doc.setFont(undefined, 'normal');
+            const participantsText = participants.value || 'Not specified';
+            const splitParticipants = doc.splitTextToSize(participantsText, 120);
+            doc.text(splitParticipants, 70, yPos);
+            yPos += splitParticipants.length * 5 + 5;
+            
+            doc.setFont(undefined, 'bold');
+            doc.text('Required Equipment:', 20, yPos);
+            doc.setFont(undefined, 'normal');
+            const equipmentText = requiredEquipment.value || 'Not specified';
+            const splitEquipment = doc.splitTextToSize(equipmentText, 120);
+            doc.text(splitEquipment, 70, yPos);
+            yPos += splitEquipment.length * 5 + 10;
+            
+            // Weather and notes
+            doc.setFont(undefined, 'bold');
+            doc.text('Weather Conditions:', 20, yPos);
+            doc.setFont(undefined, 'normal');
+            const weatherText = weatherConditions.value || 'Not specified';
+            const splitWeather = doc.splitTextToSize(weatherText, 120);
+            doc.text(splitWeather, 70, yPos);
+            yPos += splitWeather.length * 5 + 5;
+            
+            doc.setFont(undefined, 'bold');
+            doc.text('Additional Notes:', 20, yPos);
+            doc.setFont(undefined, 'normal');
+            const notesText = assessmentNotes.value || 'None';
+            const splitNotes = doc.splitTextToSize(notesText, 120);
+            doc.text(splitNotes, 70, yPos);
+            yPos += splitNotes.length * 5 + 15;
+            
+            // Check if we need a new page
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            }
+            
+            // Risk summary
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text('RISK SUMMARY', 20, yPos);
+            doc.setLineWidth(0.5);
+            doc.line(20, yPos + 2, 190, yPos + 2);
+            yPos += 10;
+            
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.text('Total Activities:', 20, yPos);
+            doc.setFont(undefined, 'normal');
+            doc.text(tasks.length.toString(), 70, yPos);
+            yPos += 7;
+            
+            doc.setFont(undefined, 'bold');
+            doc.text('Highest Risk Level:', 20, yPos);
+            doc.setFont(undefined, 'normal');
+            
+            let maxScore = 0;
+            tasks.forEach(task => {
+                const score = calculateRiskScore(task.likelihood, task.severity);
+                if (score > maxScore) maxScore = score;
+            });
+            
+            const highestRiskLevel = getRiskLevel(maxScore);
+            doc.text(`${maxScore > 0 ? maxScore + ' (' + highestRiskLevel.level + ')' : 'None'}`, 70, yPos);
+            yPos += 7;
+            
+            // Activities table
+            if (tasks.length > 0) {
+                if (yPos > 200) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text('FIELD ACTIVITIES & RISKS', 20, yPos);
+                doc.setLineWidth(0.5);
+                doc.line(20, yPos + 2, 190, yPos + 2);
+                yPos += 10;
+                
+                // Prepare table data
+                const tableData = tasks.map((task, index) => {
+                    const score = calculateRiskScore(task.likelihood, task.severity);
+                    const risk = getRiskLevel(score);
+                    const category = getRiskCategoryName(task.category);
+                    
+                    return [
+                        index + 1,
+                        task.name,
+                        task.hazard,
+                        category,
+                        `${score} (${risk.level})`,
+                        task.controls + (task.personResponsible ? `\nResponsible: ${task.personResponsible}` : '')
+                    ];
+                });
+                
+                // Create table
+                doc.autoTable({
+                    startY: yPos,
+                    head: [['#', 'Activity', 'Hazard', 'Category', 'Risk Score', 'Controls']],
+                    body: tableData,
+                    theme: 'grid',
+                    headStyles: { fillColor: [44, 62, 80] },
+                    alternateRowStyles: { fillColor: [245, 247, 250] },
+                    margin: { left: 20 },
+                    columnStyles: {
+                        0: { cellWidth: 10 },
+                        1: { cellWidth: 30 },
+                        2: { cellWidth: 35 },
+                        3: { cellWidth: 25 },
+                        4: { cellWidth: 25 },
+                        5: { cellWidth: 55 }
+                    },
+                    styles: { fontSize: 8, cellPadding: 3 },
+                    didDrawPage: function(data) {
+                        // Footer
+                        doc.setFontSize(8);
+                        doc.setTextColor(100, 100, 100);
+                        doc.text(`Field Excursion Risk Assessment - Generated on ${new Date().toLocaleDateString()}`, 105, 285, { align: 'center' });
+                    }
+                });
+            }
+            
+            // Save PDF
+            const fileName = `Field-Excursion-Risk-Assessment-${excursionDate.value || 'excursion'}.pdf`;
+            doc.save(fileName);
+            
+            // Reset button
+            exportPdfBtn.innerHTML = '<i class="fas fa-file-pdf"></i> Export PDF';
+            exportPdfBtn.disabled = false;
+        }
+        
+        // Print function
+        function printAssessment() {
+            window.print();
         }
         
         // Load saved data on page load
         function loadSavedData() {
-            const savedData = localStorage.getItem('riskAssessmentData');
+            const savedData = localStorage.getItem('fieldExcursionRiskAssessment');
             if (savedData) {
                 try {
                     const data = JSON.parse(savedData);
@@ -1073,16 +1600,15 @@
         }
         
         // Event Listeners
-        likelihood.addEventListener('change', updateRiskDisplay);
-        severity.addEventListener('change', updateRiskDisplay);
         assessmentStatus.addEventListener('change', updateStatusBadge);
         
         addTaskBtn.addEventListener('click', addNewTask);
         clearTasksBtn.addEventListener('click', clearAllTasks);
         saveBtn.addEventListener('click', saveAssessment);
+        exportPdfBtn.addEventListener('click', exportToPDF);
         exportBtn.addEventListener('click', exportAssessment);
         importFile.addEventListener('change', importAssessment);
-        clearBtn.addEventListener('click', clearForm);
+        printBtn.addEventListener('click', printAssessment);
         
         saveTaskBtn.addEventListener('click', saveTask);
         cancelTaskBtn.addEventListener('click', closeModal);
@@ -1103,9 +1629,9 @@
         });
         
         // Initialize
-        updateRiskDisplay();
         updateStatusBadge();
         renderTasksTable();
+        setupPredefinedActivities();
         loadSavedData();
         
         // Make functions available globally for inline event handlers
